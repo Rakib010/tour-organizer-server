@@ -5,6 +5,9 @@ import { catchAsync } from '../../utils/catchAsync';
 import { AuthService } from './auth.service';
 import AppError from '../../errorHelpers/AppError';
 import { setAuthCookie } from '../../utils/setCookie';
+import { createUserToken } from '../../utils/userToken';
+import { envVars } from '../../config/env';
+import { JwtPayload } from 'jsonwebtoken';
 
 
 
@@ -65,12 +68,13 @@ const accessTokenLogout = catchAsync(async (req: Request, res: Response) => {
         data: null
     })
 })
+
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
     const newPassword = req.body.newPassword;
     const oldPassword = req.body.oldPassword;
     const decodeToken = req.user
 
-    await AuthService.resetPassword(oldPassword, newPassword, decodeToken)
+    await AuthService.resetPassword(oldPassword, newPassword, decodeToken as JwtPayload)
 
     sendResponse(res, {
         success: true,
@@ -80,11 +84,37 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const googleCallBack = catchAsync(async (req: Request, res: Response) => {
+    // route theke pawa (state)
+    let redirectTo = req.query.state ? req.query.state as string : " "
+
+    if (redirectTo.startsWith("/")) {
+        redirectTo = redirectTo.slice(1)
+    }
+
+    const user = req.user
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "user Not Found")
+    }
+    const tokenInfo = await createUserToken(user)
+
+    setAuthCookie(res, tokenInfo)
+
+    res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`)
+
+    /*  sendResponse(res, {
+         success: true,
+         statusCode: httpStatus.CREATED,
+         message: "User Reset Password Successfully",
+         data: null
+     }) */
+})
 
 
 export const AuthController = {
     credentialsLogin,
     getRefreshAccessToken,
     accessTokenLogout,
-    resetPassword
+    resetPassword,
+    googleCallBack
 }

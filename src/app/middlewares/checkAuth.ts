@@ -1,4 +1,4 @@
-import { httpStatus } from 'http-status-codes';
+import httpStatus  from 'http-status-codes';
 import { NextFunction, Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../config/env";
@@ -18,6 +18,7 @@ export const checkAuth = (...authRoles: string[]) =>
             }
 
             const verifiedToken = verifyToken(accessToken, envVars.JWT_ACCESS_SECRET) as JwtPayload
+
 
             const isUserExits = await User.findOne({ email: verifiedToken.email })
 
