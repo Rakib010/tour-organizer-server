@@ -3,14 +3,13 @@ import httpStatus from 'http-status-codes';
 import AppError from "../../errorHelpers/AppError";
 import { User } from '../user/user.model';
 import bcryptjs from 'bcryptjs';
-import { createAccessTokenWithRefreshToken, createUserToken } from '../../utils/userToken';
-import { IUser } from '../user/user.interface';
+import { createAccessTokenWithRefreshToken } from '../../utils/userToken';
 import { JwtPayload } from 'jsonwebtoken';
 import { envVars } from '../../config/env';
 
 
 
-const credentialsLogin = async (payload: Partial<IUser>) => {
+/* const credentialsLogin = async (payload: Partial<IUser>) => {
     const { email, password } = payload;
 
     const isUserExits = await User.findOne({ email })
@@ -32,7 +31,7 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
         user: isUserExits
     }
 }
-
+ */
 const getRefreshAccessToken = async (refreshToken: string) => {
     const newAccessToken = await createAccessTokenWithRefreshToken(refreshToken)
 
@@ -59,7 +58,7 @@ const resetPassword = async (oldPassword: string, newPassword: string, decodeTok
 }
 
 export const AuthService = {
-    credentialsLogin,
+    // credentialsLogin,
     getRefreshAccessToken,
     resetPassword
 }

@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status-codes';
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import { sendResponse } from "../../utils/sendResponse"
 import { catchAsync } from '../../utils/catchAsync';
 import { AuthService } from './auth.service';
@@ -8,22 +10,57 @@ import { setAuthCookie } from '../../utils/setCookie';
 import { createUserToken } from '../../utils/userToken';
 import { envVars } from '../../config/env';
 import { JwtPayload } from 'jsonwebtoken';
+import passport from 'passport';
 
 
 
-const credentialsLogin = catchAsync(async (req: Request, res: Response) => {
+const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    // const logInfo = await AuthService.credentialsLogin(req.body)
 
-    const logInfo = await AuthService.credentialsLogin(req.body)
+    passport.authenticate("local", async (err: any, user: any, info: any) => {
 
-    // cookie set
-    setAuthCookie(res, logInfo)
+        if (err) {
+            return next(err)
+        }
 
-    sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.CREATED,
-        message: "User Login Successfully",
-        data: logInfo
-    })
+        if (!user) {
+            return next(new AppError(401, info.message))
+        }
+
+        const userTokens = await createUserToken(user)
+
+        // delete user.toObject().password
+        const { password: pass, ...rest } = user.toObject()
+
+        // cookie set
+        setAuthCookie(res, userTokens)
+
+        sendResponse(res, {
+            success: true,
+            statusCode: httpStatus.OK,
+            message: "User Login Successfully",
+            data: {
+                accessToken: userTokens.accessToken,
+                refreshToken: userTokens.refreshToken,
+                data: rest
+            },
+        })
+    })(req, res, next)
+
+
+    /* First time ey khane cookie set korsilam akhn middleware use kortesi 
+    -> setAuthCookie(res, userTokens)  */
+    // res.cookie("accessToken", loginInfo.accessToken, {
+    //     httpOnly: true,
+    //     secure: false
+    // })
+
+
+    // res.cookie("refreshToken", loginInfo.refreshToken, {
+    //     httpOnly: true,
+    //     secure: false,
+    // })
+
 })
 
 const getRefreshAccessToken = catchAsync(async (req: Request, res: Response) => {
@@ -84,7 +121,9 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+// Google login using Passport js (oauth2.0)
 const googleCallBack = catchAsync(async (req: Request, res: Response) => {
+
     // route theke pawa (state)
     let redirectTo = req.query.state ? req.query.state as string : " "
 
@@ -102,12 +141,6 @@ const googleCallBack = catchAsync(async (req: Request, res: Response) => {
 
     res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`)
 
-    /*  sendResponse(res, {
-         success: true,
-         statusCode: httpStatus.CREATED,
-         message: "User Reset Password Successfully",
-         data: null
-     }) */
 })
 
 
