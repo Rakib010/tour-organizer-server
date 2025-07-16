@@ -1,16 +1,12 @@
 import { Types } from "mongoose";
 
 
-export interface ITourType {
-    name: string
-}
-
 
 export interface ITour {
     title: string
     slug: string
     description?: string
-    images: string[]
+    images?: string[]
     location?: string
     costForm?: number
     starDate?: Date
