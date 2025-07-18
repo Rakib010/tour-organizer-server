@@ -1,7 +1,7 @@
 import { Response } from "express";
 
 interface TMeta {
-    total: number
+    total?: number
 }
 
 interface TResponse<T> {

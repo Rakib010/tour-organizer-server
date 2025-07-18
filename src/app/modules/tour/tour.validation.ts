@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const createTourZodSchema = z.object({
     title: z.string().min(3),
-    slug: z.string().min(3),
+    slug: z.string().min(3).optional(),
     description: z.string().optional(),
     image: z.string().optional(),
     location: z.string(),
