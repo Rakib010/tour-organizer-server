@@ -13,6 +13,8 @@ router.post("/register", validateRequest(createUserZodSchema), UserController.cr
 
 router.get("/all-users", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.getAllUsers)
 
+router.get("/single-user", UserController.getSingleUsers)
+
 router.patch('/:id', validateRequest(UpdateUserZodSchema), checkAuth(...Object.values(Role)), UserController.updateUser)
 
 

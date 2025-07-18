@@ -2,6 +2,7 @@ import httpStatus from 'http-status-codes';
 import AppError from "../../errorHelpers/AppError";
 import { IDivision } from "./division.interface";
 import { Division } from "./division.model";
+import { QueryBuilder } from '../../utils/QueryBuilder';
 
 
 const createDivision = async (payload: Partial<IDivision>) => {
@@ -9,30 +10,40 @@ const createDivision = async (payload: Partial<IDivision>) => {
     if (existingDivision) {
         throw new Error("A division with this name already exists.");
     }
-      
-    // ey kaj hook die kora hoise division model e
-   /*  const baseSlug = payload.name?.toLowerCase().split(" ").join("-")
-    let slug = `${baseSlug}-division`
 
-    let counter = 0;
-    while (await Division.exists({ slug })) {
-        slug = `${slug}-${counter++}`
-    } payload.slug = slug */
+    // ey kaj hook die kora hoise division model e
+    /*  const baseSlug = payload.name?.toLowerCase().split(" ").join("-")
+     let slug = `${baseSlug}-division`
+ 
+     let counter = 0;
+     while (await Division.exists({ slug })) {
+         slug = `${slug}-${counter++}`
+     } payload.slug = slug */
 
     const division = await Division.create(payload)
     return division
 }
 
-const getAllDivision = async () => {
-    const divisions = await Division.find({})
-    const totalDivisions = await Division.countDocuments();
-    return {
-        data: divisions,
-        meta: {
-            total: totalDivisions
-        }
-    }
+const getAllDivision = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Division.find(), query);
 
+    const divisionSearchableFields = ["name", "slug", "description"]
+    const division = await queryBuilder
+        .search(divisionSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
+
+    const [data, meta] = await Promise.all([
+        division.build(),
+        queryBuilder.getMeta()
+    ])
+
+    return {
+        meta,
+        data
+    }
 }
 
 const getSingleDivision = async (slug: string) => {

@@ -5,6 +5,8 @@ import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcrypt from "bcryptjs";
 import { envVars } from '../../config/env';
+import { QueryBuilder } from '../../utils/QueryBuilder';
+
 
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, ...rest } = payload;
@@ -29,14 +31,12 @@ const createUser = async (payload: Partial<IUser>) => {
     return user
 }
 
-/**
- * email - can not update
- * name, phone, password address
- * password - re hashing
- * only admin superadmin - role, isDeleted...
- * 
- * promoting to superadmin - superadmin
- */
+// email - can not update
+//   name, phone, password address
+//   password - re hashing
+//   only admin superadmin - role, isDeleted...
+//   promoting to superadmin - superadmin
+
 
 const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
 
@@ -71,22 +71,37 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
 
 }
 
+const getAllUsers = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(User.find(), query)
 
-const getAllUsers = async () => {
-    const users = await User.find({})
+    const userSearchableFields = ["name", "address", "phone"]
 
-    const totalUser = await User.countDocuments()
+    const users = await queryBuilder
+        .search(userSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
 
+    const [data, meta] = await Promise.all([
+        users.build(),
+        queryBuilder.getMeta()
+    ])
+    
     return {
-        data: users,
-        meta: {
-            total: totalUser
-        }
+        meta,
+        data
     }
+}
+
+const getSingleUsers = async (slug: string) => {
+    const user = await User.find({ slug })
+    return user
 }
 
 export const userServices = {
     createUser,
     getAllUsers,
-    updateUser
+    updateUser,
+    getSingleUsers
 }

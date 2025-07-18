@@ -23,9 +23,6 @@ const createTour = async (payload: Partial<ITour>) => {
     return tour;
 };
 
-
-
-
 /* const getAllTours = async (query: Record<string, string>) => {
     const filter = query; // ?location=dhaka
     const searchTerm = query.searchTerm || ""
@@ -106,6 +103,14 @@ const getAllTours = async (query: Record<string, string>) => {
     }
 }
 
+const getSingleTours = async (slug: string) => {
+
+    const division = await Tour.findOne({ slug });
+    return {
+        data: division,
+    }
+
+}
 
 const updateTour = async (id: string, payload: Partial<ITour>) => {
     const existingTour = await Tour.findById(id);
@@ -134,7 +139,6 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     return updatedTour;
 };
 
-
 const deleteTour = async (id: string) => {
 
     // Optional: Check if tour has bookings
@@ -152,5 +156,6 @@ export const tourServices = {
     createTour,
     getAllTours,
     updateTour,
-    deleteTour
+    deleteTour,
+    getSingleTours
 }

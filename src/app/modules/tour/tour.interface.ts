@@ -1,7 +1,6 @@
 import { Types } from "mongoose";
 
 
-
 export interface ITour {
     title: string
     slug: string
@@ -11,6 +10,8 @@ export interface ITour {
     costForm?: number
     starDate?: Date
     endDate?: Date
+    departureLocation?: string
+    arrivalLocation?: string
     included?: string[]
     exclude?: string[]
     amenities?: string[]
