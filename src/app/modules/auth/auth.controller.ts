@@ -13,9 +13,25 @@ import { JwtPayload } from 'jsonwebtoken';
 import passport from 'passport';
 
 
+// Traditional Login-token base(jwt)
+/* const credentialsLogin1 = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
+    const logInfo = await AuthService.credentialsLogin(req.body)
+
+    // set cookie
+    setAuthCookie(res, result)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "User Login SuccessFully",
+        data: result
+    })
+
+}) */
+
+// passport OAuth-based Login (Session Based Authentication) 
 const credentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    // const logInfo = await AuthService.credentialsLogin(req.body)
 
     passport.authenticate("local", async (err: any, user: any, info: any) => {
 
@@ -46,20 +62,6 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
             },
         })
     })(req, res, next)
-
-
-    /* First time ey khane cookie set korsilam akhn middleware use kortesi 
-    -> setAuthCookie(res, userTokens)  */
-    // res.cookie("accessToken", loginInfo.accessToken, {
-    //     httpOnly: true,
-    //     secure: false
-    // })
-
-
-    // res.cookie("refreshToken", loginInfo.refreshToken, {
-    //     httpOnly: true,
-    //     secure: false,
-    // })
 
 })
 

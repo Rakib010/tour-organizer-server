@@ -8,7 +8,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { envVars } from '../../config/env';
 
 
-
+// Traditional Login-token base(jwt)
 /* const credentialsLogin = async (payload: Partial<IUser>) => {
     const { email, password } = payload;
 
@@ -32,6 +32,7 @@ import { envVars } from '../../config/env';
     }
 }
  */
+
 const getRefreshAccessToken = async (refreshToken: string) => {
     const newAccessToken = await createAccessTokenWithRefreshToken(refreshToken)
 
