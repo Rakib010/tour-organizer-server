@@ -40,9 +40,9 @@ const createUser = async (payload: Partial<IUser>) => {
 
 const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
 
-    const ifUserExist = await User.findById(userId)
+    const isUserExist = await User.findById(userId)
 
-    if (!ifUserExist) {
+    if (!isUserExist) {
         throw new AppError(httpStatus.NOT_FOUND, "User Not Found")
     }
 
