@@ -1,4 +1,4 @@
-import { verifyToken, verifyToken } from './../../utils/jwt';
+import { verifyToken } from './../../utils/jwt';
 import httpStatus from 'http-status-codes';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -35,7 +35,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
     const payload = req.body
 
-    const result = await userServices.updateUser(userId, payload, verifiedToken)
+    const result = await userServices.updateUser(userId, payload, verifiedToken as JwtPayload)
 
     sendResponse(res, {
         success: true,
@@ -45,25 +45,38 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     })
 })
 
-
 const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const result = await userServices.getAllUsers()
+    const query = req.query
+
+    const users = await userServices.getAllUsers(query as Record<string, string>)
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "All User Retrieved Successfully",
-        data: result.data,
-        meta: result.meta
+        data: users,
+
     })
 
 })
+
+const getSingleUsers = catchAsync(async (req: Request, res: Response) => {
+    const slug = req.params.slug
+    const user = await userServices.getSingleUsers(slug);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Tours retrieved successfully',
+        data: user
+    });
+});
 
 
 export const UserController = {
     createUser,
     getAllUsers,
-    updateUser
+    updateUser,
+    getSingleUsers
 }
 
