@@ -62,8 +62,8 @@ const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFun
 })
 
 const getSingleUsers = catchAsync(async (req: Request, res: Response) => {
-    const slug = req.params.slug
-    const user = await userServices.getSingleUsers(slug);
+    const id = req.params.id
+    const user = await userServices.getSingleUsers(id);
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,

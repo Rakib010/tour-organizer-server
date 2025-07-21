@@ -87,15 +87,15 @@ const getAllUsers = async (query: Record<string, string>) => {
         users.build(),
         queryBuilder.getMeta()
     ])
-    
+
     return {
         meta,
         data
     }
 }
 
-const getSingleUsers = async (slug: string) => {
-    const user = await User.find({ slug })
+const getSingleUsers = async (id: string) => {
+    const user = await User.find({ id })
     return user
 }
 
