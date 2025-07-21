@@ -6,7 +6,7 @@ export const createTourZodSchema = z.object({
     description: z.string().optional(),
     image: z.string().optional(),
     location: z.string(),
-    costForm: z.number(),
+    costFrom: z.number(),
     starDate: z.string(),
     endDate: z.string(),
     departureLocation: z.string().optional(),

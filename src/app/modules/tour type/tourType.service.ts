@@ -20,7 +20,7 @@ const getAllTourTypes = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(TourType.find(), query);
 
   const tourTypeSearchableFields = ["name"];
-  
+
   const tourType = await queryBuilder
     .search(tourTypeSearchableFields)
     .filter()
@@ -39,6 +39,14 @@ const getAllTourTypes = async (query: Record<string, string>) => {
     data
   }
 
+
+};
+
+const getSingleTourTypes = async (id: string) => {
+  const tourType = await TourType.findById(id);
+  return {
+    data: tourType
+  };
 
 };
 
@@ -78,5 +86,6 @@ export const tourTypeService = {
   createTourType,
   getAllTourTypes,
   updateTourType,
-  deleteTourType
+  deleteTourType,
+  getSingleTourTypes
 }
