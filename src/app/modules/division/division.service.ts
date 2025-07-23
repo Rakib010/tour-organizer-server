@@ -3,6 +3,7 @@ import AppError from "../../errorHelpers/AppError";
 import { IDivision } from "./division.interface";
 import { Division } from "./division.model";
 import { QueryBuilder } from '../../utils/QueryBuilder';
+import { deleteImageFromCloudinary } from '../../config/cloudinary.config';
 
 
 const createDivision = async (payload: Partial<IDivision>) => {
@@ -54,9 +55,9 @@ const getSingleDivision = async (slug: string) => {
 };
 
 const updatedDivision = async (id: string, payload: Partial<IDivision>) => {
-    const isDivision = await Division.findById(id)
+    const existingDivision = await Division.findById(id)
 
-    if (!isDivision) {
+    if (!existingDivision) {
         throw new AppError(httpStatus.NOT_FOUND, "Division Not Found")
     }
     const duplicateDivision = await Division.findOne({
@@ -80,6 +81,11 @@ const updatedDivision = async (id: string, payload: Partial<IDivision>) => {
     } */
 
     const updatedDivision = await Division.findByIdAndUpdate(id, payload, { new: true, runValidators: true })
+
+    // update photo in cloudinary! agher photo delete hoye new photo set hobe
+    if (payload.thumbnail && existingDivision.thumbnail) {
+        await deleteImageFromCloudinary(existingDivision.thumbnail)
+    }
 
     return updatedDivision
 }

@@ -1,3 +1,4 @@
+import { deleteImageFromCloudinary } from '../../config/cloudinary.config';
 import { QueryBuilder } from './../../utils/QueryBuilder';
 import { tourSearchableFields } from './tour.constant';
 import { ITour } from "./tour.interface"
@@ -23,6 +24,7 @@ const createTour = async (payload: Partial<ITour>) => {
     return tour;
 };
 
+// advanced filter,search (eitai pore query build die kora hoyse jeno reusable hoy code )
 /* const getAllTours = async (query: Record<string, string>) => {
     const filter = query; // ?location=dhaka
     const searchTerm = query.searchTerm || ""
@@ -119,23 +121,57 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
         throw new Error("Tour not found.");
     }
 
-    /* eykaj  hook use kora hoise model e
-    if (payload.title) {
-        const baseSlug = payload.title?.toLowerCase().split(" ").join("-")
-        let slug = `${baseSlug}`
+    /**
+     * যদি title পরিবর্তন করা হয়, তাহলে slug generate করার logic এখানে ছিল।
+     * এটি এখন Model level pre-save hook এ handle হচ্ছে বলে এখানে comment করে রাখা হয়েছে।
+     */
 
-        let counter = 0;
-        while (await Tour.exists({ slug })) {
-            slug = `${slug}-${counter++}`
-        }
-        payload.title = slug
-    } */
+    // নতুন image থাকলে, পুরানো image গুলোর সাথে মিলে payload এ সেট করো
+    if (payload.images && payload.images.length > 0 && existingTour.images && existingTour.images.length > 0) {
+        // নতুন image গুলোর সাথে পুরানো গুলো যোগ করে images field তৈরি করো
+        payload.images = [...payload.images, ...existingTour.images];
+    }
 
+    //  deleteImages ফিল্ড থাকলে, পুরানো ইমেজ থেকে ঐ image গুলো বাদ দিয়ে নতুন image list তৈরি করো
+    if (
+        payload.deleteImages &&
+        payload.deleteImages.length > 0 &&
+        existingTour.images &&
+        existingTour.images.length > 0
+    ) {
+        // পুরানো DB image থেকে যেগুলো delete list-এ নেই সেগুলো রেখে দাও
+        const restDBImages = existingTour.images.filter(
+            imageUrl => !payload.deleteImages?.includes(imageUrl)
+        );
 
+        // নতুন যোগ করা image গুলোর মধ্যে থেকে যেগুলো delete list-এ নেই এবং DB-তে নেই সেগুলো বের করো
+        const updatedPayloadImages = (payload.images || [])
+            .filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
+            .filter(imageUrl => !restDBImages.includes(imageUrl));
+
+        // নতুন এবং পুরাতন ফিল্টার করা image গুলো মিলিয়ে images ফিল্ড তৈরি করো
+        payload.images = [...restDBImages, ...updatedPayloadImages];
+    }
+
+    //  Tour ডেটা আপডেট করো
     const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
-        new: true,
-        runValidators: true,
+        new: true, // Updated document return করো
+        runValidators: true, // Schema validation enforce করো
     });
+
+    //  deleteImages থাকলে, Cloudinary থেকে সেই ইমেজগুলোও ডিলিট করো
+    if (
+        payload.deleteImages &&
+        payload.deleteImages.length > 0 &&
+        existingTour.images &&
+        existingTour.images.length > 0
+    ) {
+        await Promise.all(
+            payload.deleteImages.map(url => deleteImageFromCloudinary(url))
+        );
+    }
+
+
     return updatedTour;
 };
 
