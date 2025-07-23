@@ -5,7 +5,7 @@ import { paymentServices } from "./payment.service";
 import { sendResponse } from "../../utils/sendResponse";
 
 
-
+// paymentUrl direct pawa jabe and payment korbe 
 const initPayment = catchAsync(async (req: Request, res: Response) => {
     const bookingId = req.params.bookingId
     const result = await paymentServices.initPayment(bookingId)
@@ -19,6 +19,7 @@ const initPayment = catchAsync(async (req: Request, res: Response) => {
 });
 
 const successPayment = catchAsync(async (req: Request, res: Response) => {
+    // query ta ssl commerz service er success_url(like transactionId pass korse) theke pacchi 
     const query = req.query
     const result = await paymentServices.successPayment(query as Record<string, string>)
 
