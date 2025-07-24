@@ -7,6 +7,8 @@ import AppError from "../errorHelpers/AppError";
 //Multer storage cloudinary
 //Amader folder -> image -> form data -> File -> Multer -> storage in cloudinary -> url ->  req.file  -> url  -> mongoose -> mongodb
 
+
+// Cloudinary Config 
 cloudinary.config({
     cloud_name: envVars.CLOUDINARY.CLOUDINARY_CLOUD_NAME,
     api_key: envVars.CLOUDINARY.CLOUDINARY_API_KEY,
@@ -15,15 +17,15 @@ cloudinary.config({
 
 export const cloudinaryUpload = cloudinary
 
-
+// Delete file from cloudinary 
 export const deleteImageFromCloudinary = async (url: string) => {
     try {
         const regex = /\/v\d+\/(.*?)\.(jpg|jpeg|png|gif|webp)$/i;
-        const match = url.match(regex);
+        const match = url.match(regex);  // url থেকে public_id বের করার জন্য
         // console.log({ match });
 
         if (match && match[1]) {
-            const public_id = match[1];
+            const public_id = match[1];  
             await cloudinary.uploader.destroy(public_id)
             //console.log(`File ${public_id} is deleted from cloudinary`);
         }

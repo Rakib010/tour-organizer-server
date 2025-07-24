@@ -13,7 +13,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import passport from 'passport';
 
 
-// Traditional Login-token base(jwt)
+// custom Login -> token base(jwt)
 /* const credentialsLogin1 = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const logInfo = await AuthService.credentialsLogin(req.body)
@@ -65,6 +65,7 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
 
 })
 
+// Refresh Token create
 const getRefreshAccessToken = catchAsync(async (req: Request, res: Response) => {
 
     const refreshToken = req.cookies.refreshToken
@@ -86,6 +87,7 @@ const getRefreshAccessToken = catchAsync(async (req: Request, res: Response) => 
     })
 })
 
+// Clear cookie in Browser 
 const accessTokenLogout = catchAsync(async (req: Request, res: Response) => {
 
     res.clearCookie("accessToken", {
@@ -108,12 +110,56 @@ const accessTokenLogout = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
-const resetPassword = catchAsync(async (req: Request, res: Response) => {
+// Change Password user 
+const changePassword = catchAsync(async (req: Request, res: Response) => {
     const newPassword = req.body.newPassword;
     const oldPassword = req.body.oldPassword;
     const decodeToken = req.user
 
-    await AuthService.resetPassword(oldPassword, newPassword, decodeToken as JwtPayload)
+    await AuthService.changePassword(oldPassword, newPassword, decodeToken as JwtPayload)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "User Reset Password Successfully",
+        data: null
+    })
+})
+
+// When a Google-authenticated user wants to set a password for logging in manually
+const setPassword = catchAsync(async (req: Request, res: Response) => {
+    const { password } = req.body
+    const decodeToken = req.user as JwtPayload
+
+    await AuthService.setPassword(decodeToken.userId, password)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "Set Password Successfully",
+        data: null
+    })
+})
+
+// user forgot their password
+const forgetPassword = catchAsync(async (req: Request, res: Response) => {
+    const { email } = req.body
+
+    await AuthService.forgetPassword(email)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "Email send  Successfully",
+        data: null
+    })
+})
+
+// reset password
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+    const decodeToken = req.user
+
+    await AuthService.resetPassword(req.body, decodeToken as JwtPayload)
 
     sendResponse(res, {
         success: true,
@@ -151,5 +197,8 @@ export const AuthController = {
     getRefreshAccessToken,
     accessTokenLogout,
     resetPassword,
-    googleCallBack
+    googleCallBack,
+    changePassword,
+    setPassword,
+    forgetPassword
 }

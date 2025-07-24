@@ -9,13 +9,21 @@ import { Role } from "./user.interface";
 const router = Router()
 
 
-router.post("/register", validateRequest(createUserZodSchema), UserController.createUser)
+router.post("/register",
+    validateRequest(createUserZodSchema),
+    UserController.createUser)
 
-router.get("/all-users", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.getAllUsers)
+router.get("/all-users",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.getAllUsers)
+
+router.get("/me", checkAuth(...Object.values(Role)), UserController.getMe)
 
 router.get("/single-user", UserController.getSingleUsers)
 
-router.patch('/:id', validateRequest(UpdateUserZodSchema), checkAuth(...Object.values(Role)), UserController.updateUser)
+router.patch('/:id',
+    validateRequest(UpdateUserZodSchema),
+    checkAuth(...Object.values(Role)),
+    UserController.updateUser)
 
 
 export const UserRoutes = router

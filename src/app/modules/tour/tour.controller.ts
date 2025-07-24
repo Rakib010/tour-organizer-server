@@ -12,7 +12,10 @@ const createTour = catchAsync(async (req: Request, res: Response) => {
      }) */
 
     const payload: ITour = {
+        // ফর্ম থেকে আসা সব ডাটা (title, description, price, etc.)
         ...req.body,
+
+        // ফাইলগুলো থেকে প্রতিটি ছবির Cloudinary path নিয়ে images ফিল্ডে রাখা হচ্ছে
         images: (req.files as Express.Multer.File[]).map(file => file.path)
     }
 

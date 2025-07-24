@@ -122,44 +122,44 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     }
 
     /**
-     * যদি title পরিবর্তন করা হয়, তাহলে slug generate করার logic এখানে ছিল।
-     * এটি এখন Model level pre-save hook এ handle হচ্ছে বলে এখানে comment করে রাখা হয়েছে।
+     * Slug generation logic was previously handled here if the title was updated.
+     * But now it's managed in the model-level pre-save hook, so it has been removed from here.
      */
 
-    // নতুন image থাকলে, পুরানো image গুলোর সাথে মিলে payload এ সেট করো
+    // If new images are provided, and existing images already exist in DB
     if (payload.images && payload.images.length > 0 && existingTour.images && existingTour.images.length > 0) {
-        // নতুন image গুলোর সাথে পুরানো গুলো যোগ করে images field তৈরি করো
+        // Combine the new images with the existing ones and assign to payload.images
         payload.images = [...payload.images, ...existingTour.images];
     }
 
-    //  deleteImages ফিল্ড থাকলে, পুরানো ইমেজ থেকে ঐ image গুলো বাদ দিয়ে নতুন image list তৈরি করো
+    // If deleteImages field is provided, create a new image list excluding those to be deleted
     if (
         payload.deleteImages &&
         payload.deleteImages.length > 0 &&
         existingTour.images &&
         existingTour.images.length > 0
     ) {
-        // পুরানো DB image থেকে যেগুলো delete list-এ নেই সেগুলো রেখে দাও
+        // Keep only those DB images which are not in the deleteImages list
         const restDBImages = existingTour.images.filter(
             imageUrl => !payload.deleteImages?.includes(imageUrl)
         );
 
-        // নতুন যোগ করা image গুলোর মধ্যে থেকে যেগুলো delete list-এ নেই এবং DB-তে নেই সেগুলো বের করো
+        // From the new images, keep only those not listed in deleteImages and not already in DB
         const updatedPayloadImages = (payload.images || [])
             .filter(imageUrl => !payload.deleteImages?.includes(imageUrl))
             .filter(imageUrl => !restDBImages.includes(imageUrl));
 
-        // নতুন এবং পুরাতন ফিল্টার করা image গুলো মিলিয়ে images ফিল্ড তৈরি করো
+        // Combine filtered DB images and new images to create final image list
         payload.images = [...restDBImages, ...updatedPayloadImages];
     }
 
-    //  Tour ডেটা আপডেট করো
+    // Update the tour data
     const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
-        new: true, // Updated document return করো
-        runValidators: true, // Schema validation enforce করো
+        new: true, 
+        runValidators: true, 
     });
 
-    //  deleteImages থাকলে, Cloudinary থেকে সেই ইমেজগুলোও ডিলিট করো
+    // If deleteImages exist, also remove them from Cloudinary
     if (
         payload.deleteImages &&
         payload.deleteImages.length > 0 &&
@@ -171,9 +171,9 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
         );
     }
 
-
     return updatedTour;
 };
+
 
 const deleteTour = async (id: string) => {
 
