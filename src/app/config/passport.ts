@@ -2,7 +2,7 @@
 import { envVars } from "./env";
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20"
 import { User } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcryptjs from 'bcryptjs';
 
@@ -16,14 +16,25 @@ passport.use(
         async (email: string, password: string, done: any) => {
             try {
                 const isUserExits = await User.findOne({ email })
+                /*      if (!isUserExits) {
+                       return done(null, false, { message: "User does not exist" })
+                   }
+                      */
                 if (!isUserExits) {
-                    return done(null, false, { message: "User does not exist" })
+                    return done("User does not exist")
                 }
 
-                /*   if (!isUserExist) {
-                      return done("User does not exist")
-                  } */
+                if (!isUserExits.isVerified) {
+                    return done("user is  not verified")
+                }
 
+                if (isUserExits.isActive === IsActive.BLOCKED || isUserExits.isActive === IsActive.INACTIVE) {
+                    return done(`user is ${isUserExits.isActive}`)
+                }
+
+                if (!isUserExits.isDeleted) {
+                    return done("user is deleted")
+                }
 
                 const isGoogleAuthenticated = isUserExits.auths.some(providerObjects => providerObjects.provider === "google")
 
@@ -50,11 +61,6 @@ passport.use(
         }
     ))
 
-
-
-
-
-
 // google login passport-google-oauth20
 passport.use(
     new GoogleStrategy(
@@ -70,10 +76,22 @@ passport.use(
                     return done(null, false, { message: "No email found" })
                 }
 
-                let user = await User.findOne({ email })
+                let isUserExist = await User.findOne({ email })
 
-                if (!user) {
-                    user = await User.create({
+                if (isUserExist && !isUserExist.isVerified) {
+                    return done(null, false, { message: "User is not verified" })
+                }
+
+                if (isUserExist && (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE)) {
+                    done(`User is ${isUserExist.isActive}`)
+                }
+
+                if (isUserExist && isUserExist.isDeleted) {
+                    return done(null, false, { message: "User is deleted" })
+                }
+
+                if (!isUserExist) {
+                    isUserExist = await User.create({
                         email,
                         name: profile.displayName,
                         picture: profile.photos?.[0].value,
@@ -87,7 +105,8 @@ passport.use(
                         ]
                     })
                 }
-                return done(null, user, { message: "user create successfully" })
+                return done(null, isUserExist,
+                    { message: "user create successfully" })
 
             } catch (error) {
                 return done(error)

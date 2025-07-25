@@ -3,9 +3,23 @@ import { Request, Response } from "express"
 import { catchAsync } from "../../utils/catchAsync"
 import { tourServices } from "./tour.service"
 import { sendResponse } from "../../utils/sendResponse"
+import { ITour } from './tour.interface';
 
 const createTour = catchAsync(async (req: Request, res: Response) => {
-    const result = await tourServices.createTour(req.body);
+    /*  console.log({
+         body: req.body,
+         files: req.files
+     }) */
+
+    const payload: ITour = {
+        // ফর্ম থেকে আসা সব ডাটা (title, description, price, etc.)
+        ...req.body,
+
+        // ফাইলগুলো থেকে প্রতিটি ছবির Cloudinary path নিয়ে images ফিল্ডে রাখা হচ্ছে
+        images: (req.files as Express.Multer.File[]).map(file => file.path)
+    }
+
+    const result = await tourServices.createTour(payload);
 
     sendResponse(res, {
         success: true,
@@ -41,8 +55,10 @@ const getSingleTours = catchAsync(async (req: Request, res: Response) => {
 
 const updateTour = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const payload = req.body;
-
+    const payload: ITour = {
+        ...req.body,
+        images: (req.files as Express.Multer.File[]).map(file => file.path)
+    }
     const result = await tourServices.updateTour(id, payload);
 
     sendResponse(res, {

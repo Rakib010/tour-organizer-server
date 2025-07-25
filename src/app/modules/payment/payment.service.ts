@@ -10,6 +10,7 @@ import { SSLService } from '../sslCommerz/sslCommerz.service';
 
 
 
+//kew jodi payment korte giye balance nai or pore payment korbe tar cancel kore dise (paymentUrl direct pawa jabe and payment korbe )
 const initPayment = async (bookingId: string) => {
 
     const payment = await Payment.findOne({ booking: bookingId })

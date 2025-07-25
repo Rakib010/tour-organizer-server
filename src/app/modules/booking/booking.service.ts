@@ -9,11 +9,8 @@ import { PAYMENT_STATUS } from '../payment/payment.interfaces';
 import { Tour } from '../tour/tour.model';
 import { SSLService } from '../sslCommerz/sslCommerz.service';
 import { ISSLCommerz } from '../sslCommerz/sslCommerz.interfaces';
+import { getTransactionId } from '../../utils/getTransactionId';
 
-
-const getTransactionId = () => {
-    return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`
-}
 
 /*
  * Duplicate DB Collections / replica
@@ -104,13 +101,33 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     }
 };
 
+const getUserBookings = async () => {
+
+    return {}
+};
+
+const getBookingById = async () => {
+    return {}
+};
+
+const updateBookingStatus = async (
+
+) => {
+
+    return {}
+};
+
+const getAllBookings = async () => {
+
+}
+
 
 
 
 export const BookingService = {
     createBooking,
-    /*getUserBookings,
+    getUserBookings,
     getBookingById,
     updateBookingStatus,
-    getAllBookings, */
+    getAllBookings,
 };
