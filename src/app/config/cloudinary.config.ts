@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import { envVars } from "./env";
 import AppError from "../errorHelpers/AppError";
+import stream from 'stream'
+
 
 //Multer storage cloudinary
 //Amader folder -> image -> form data -> File -> Multer -> storage in cloudinary -> url ->  req.file  -> url  -> mongoose -> mongodb
-
 
 // Cloudinary Config 
 cloudinary.config({
@@ -25,7 +25,7 @@ export const deleteImageFromCloudinary = async (url: string) => {
         // console.log({ match });
 
         if (match && match[1]) {
-            const public_id = match[1];  
+            const public_id = match[1];
             await cloudinary.uploader.destroy(public_id)
             //console.log(`File ${public_id} is deleted from cloudinary`);
         }
@@ -35,4 +35,27 @@ export const deleteImageFromCloudinary = async (url: string) => {
     }
 }
 
+
+// Upload Invoice PDF to Cloudinary
+export const uploadBufferToCloudinary = async (buffer: Buffer, fileName: string): Promise<UploadApiResponse | undefined> => {
+    return new Promise((resolve, reject) => {
+        const public_id = `pdf/${fileName}-${Date.now()}`
+
+        const bufferStream = new stream.PassThrough()
+        bufferStream.end(buffer)
+
+        cloudinary.uploader.upload_stream({
+            resource_type: "auto",
+            public_id: public_id,
+            folder: "pdf"
+        },
+            (error, result) => {
+                if (error) {
+                    return reject(error)
+                }
+                resolve(result)
+            }
+        ).end(buffer)
+    })
+}
 

@@ -12,11 +12,21 @@ route.post('/login', AuthController.credentialsLogin)
 route.post('/refresh-token', AuthController.getRefreshAccessToken)
 route.post('/logout', AuthController.accessTokenLogout)
 
-route.post('/change-password', checkAuth(...Object.values(Role)), AuthController.changePassword)
-route.post('/set-password', checkAuth(...Object.values(Role)), AuthController.setPassword)
+route.post('/change-password',
+    checkAuth(...Object.values(Role)),
+    AuthController.changePassword)
 
-route.post('/forget-password', checkAuth(...Object.values(Role)), AuthController.forgetPassword)
-route.post('/reset-password', checkAuth(...Object.values(Role)), AuthController.resetPassword)
+route.post('/set-password',
+    checkAuth(...Object.values(Role)),
+    AuthController.setPassword)
+
+route.post('/forget-password',
+    checkAuth(...Object.values(Role)),
+    AuthController.forgetPassword)
+
+route.post('/reset-password',
+    checkAuth(...Object.values(Role)),
+    AuthController.resetPassword)
 
 // /booking -> /login -> success login -> /booking frontend
 // /login -> login -> /booking

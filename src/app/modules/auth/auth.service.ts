@@ -49,11 +49,13 @@ const changePassword = async (oldPassword: string, newPassword: string, decodeTo
 
     const user = await User.findById(decodeToken.userId)
 
-
     const isOldPasswordMatch = await bcryptjs.compare(oldPassword, user!.password as string)
 
     if (!isOldPasswordMatch) {
         throw new AppError(httpStatus.UNAUTHORIZED, "Old password does not match")
+    }
+    if (oldPassword === newPassword) {
+        throw new AppError(httpStatus.UNAUTHORIZED, "The old password cannot be set again")
     }
 
     user!.password = await bcryptjs.hash(newPassword, Number(envVars.BCRYPT_SALT_ROUND))

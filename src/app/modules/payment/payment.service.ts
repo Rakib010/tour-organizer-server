@@ -11,6 +11,7 @@ import { generatePdf, IInvoiceData } from '../../utils/invoice';
 import { sendEmail } from '../../utils/sendEmail';
 import { ITour } from '../tour/tour.interface';
 import { IUser } from '../user/user.interface';
+import { uploadBufferToCloudinary } from '../../config/cloudinary.config';
 
 
 
@@ -76,7 +77,7 @@ const successPayment = async (query: Record<string, string>) => {
             throw new AppError(401, "Booking not found")
         }
 
-        // make InvoiceData 
+        //  Invoice generation
         const invoiceData: IInvoiceData = {
             bookingDate: updatedBooking.createdAt as Date,
             guestCount: updatedBooking.guestCount,
@@ -88,6 +89,19 @@ const successPayment = async (query: Record<string, string>) => {
 
         const pdfBuffer = await generatePdf(invoiceData)
 
+        // upload pdf in cloudinary
+        const cloudinaryResult = await uploadBufferToCloudinary(pdfBuffer, "invoice")
+
+        if (!cloudinaryResult) {
+            throw new AppError(401, "Error uploading pdf")
+
+        }
+
+        await Payment.findByIdAndUpdate(updatedPayment._id, { invoiceUrl: cloudinaryResult.secure_url }, { runValidators: true, session })
+
+        //console.log({ cloudinaryResult })
+
+        // Email sending with attachment
         await sendEmail({
             to: (updatedBooking.user as unknown as IUser).email,
             subject: "Your Booking Invoice",
@@ -173,9 +187,26 @@ const cancelPayment = async (query: Record<string, string>) => {
         throw error
     }
 };
+
+const getInvoiceDownloadUrl = async (paymentId: string) => {
+    const payment = await Payment.findById(paymentId)
+        .select("invoiceUrl")
+
+    if (!payment) {
+        throw new AppError(401, "Payment not found")
+    }
+
+    if (!payment.invoiceUrl) {
+        throw new AppError(401, "No invoice found")
+    }
+
+    return payment.invoiceUrl
+};
+
 export const paymentServices = {
     successPayment,
     failPayment,
     cancelPayment,
-    initPayment
+    initPayment,
+    getInvoiceDownloadUrl
 }
