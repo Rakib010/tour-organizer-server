@@ -4,7 +4,6 @@ import AppError from "../../errorHelpers/AppError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcrypt from "bcryptjs";
-import { envVars } from '../../config/env';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 
 

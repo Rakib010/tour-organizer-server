@@ -29,11 +29,11 @@ export const seedSuperAdmin = async () => {
             isVerified: true,
             auths: [authProvider]
         }
-
+          
         const superAdmin = await User.create(payload)
         console.log("Super Admin Created Successfully! \n");
         console.log(superAdmin);
-
+      
     } catch (error) {
         console.log(error)
     }

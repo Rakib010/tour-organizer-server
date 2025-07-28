@@ -97,6 +97,7 @@ const successPayment = async (query: Record<string, string>) => {
 
         }
 
+        // invoice pdf cloudinary upload dewer por payment(db te) e invoiceURL er link ta update korlam
         await Payment.findByIdAndUpdate(updatedPayment._id, { invoiceUrl: cloudinaryResult.secure_url }, { runValidators: true, session })
 
         //console.log({ cloudinaryResult })

@@ -1,9 +1,8 @@
-import { verifyToken } from './../../utils/jwt';
-import httpStatus from 'http-status-codes';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import httpStatus from 'http-status-codes';
 import { NextFunction, Request, Response } from "express";
-import { StatusCodes, } from 'http-status-codes';
+import StatusCodes from 'http-status-codes';
 import { userServices } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
