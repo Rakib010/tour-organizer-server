@@ -3,6 +3,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { envVars } from "../../config/env";
 import { paymentServices } from "./payment.service";
 import { sendResponse } from "../../utils/sendResponse";
+import { SSLService } from "../sslCommerz/sslCommerz.service";
 
 
 // paymentUrl direct pawa jabe and payment korbe 
@@ -46,9 +47,36 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
     }
 });
 
+const getInvoiceDownloadUrl = catchAsync(async (req: Request, res: Response) => {
+    const { paymentId } = req.params;
+    const result = await paymentServices.getInvoiceDownloadUrl(paymentId);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Invoice download URL retrieved successfully",
+        data: result,
+    });
+}
+);
+
+const validatePayment = catchAsync(async (req: Request, res: Response) => {
+   // console.log("sslcommerz IPN url body ", req.body)
+
+    await SSLService.validatePayment(req.body);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Payment validated successfully",
+        data: null,
+    });
+}
+);
+
 export const paymentController = {
     successPayment,
     failPayment,
     cancelPayment,
-    initPayment
+    initPayment,
+    getInvoiceDownloadUrl,
+    validatePayment
 }

@@ -7,8 +7,25 @@ import cookieParser from "cookie-parser"
 import passport from "passport"
 import expressSession from "express-session"
 import "./app/config/passport"
+import { envVars } from "./app/config/env"
+import { rateLimit } from 'express-rate-limit'
+
 
 const app = express()
+
+
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	limit: 1, 
+})
+// Apply the rate limiting middleware to all requests.
+app.use(limiter)
+
+
+
+
+
+
 
 app.use(expressSession({
     secret: "your secret",
@@ -19,8 +36,12 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(cookieParser())
 app.use(express.json())
+app.set("trust proxy", 1)
 app.use(express.urlencoded({ extended: true }))
-app.use(cors())
+app.use(cors({
+    origin: envVars.FRONTEND_URL,
+    credentials: true
+}))
 
 // Route
 app.use("/api/v1", router)

@@ -4,7 +4,6 @@ import AppError from "../../errorHelpers/AppError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcrypt from "bcryptjs";
-import { envVars } from '../../config/env';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 
 
@@ -40,28 +39,34 @@ const createUser = async (payload: Partial<IUser>) => {
 
 const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
 
+    if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+        if (userId !== decodedToken.userId) {
+            throw new AppError(401, "You are not authorized")
+        }
+    }
+
     const isUserExist = await User.findById(userId)
 
     if (!isUserExist) {
         throw new AppError(httpStatus.NOT_FOUND, "User Not Found")
     }
 
+    if (decodedToken.role === Role.ADMIN && isUserExist.role === Role.SUPER_ADMIN) {
+        throw new AppError(401, "You are not authorized")
+    }
+
     if (payload.role) {
         if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
             throw new AppError(httpStatus.FORBIDDEN, "You are not authorized")
         }
-        if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
-            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized")
-        }
+        /*  if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
+             throw new AppError(httpStatus.FORBIDDEN, "You are not authorized")
+         } */
     }
     if (payload.isActive || payload.isDeleted || payload.isVerified) {
         if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
             throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
         }
-    }
-
-    if (payload.password) {
-        payload.password = await bcrypt.hash(payload.password, envVars.BCRYPT_SALT_ROUND)
     }
 
     const newUpdatedUser = await User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true })
@@ -98,6 +103,7 @@ const getSingleUsers = async (id: string) => {
     const user = await User.find({ id })
     return user
 }
+
 const getMe = async (userId: string) => {
     const user = await User.findById(userId).select("-password")
     return user

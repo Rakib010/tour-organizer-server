@@ -11,6 +11,7 @@ import { deleteImageFromCloudinary } from "../config/cloudinary.config";
 export const globalErrorhandler = async (err: any, req: Request, res: Response, next: NextFunction) => {
 
     if (envVars.NODE_ENV === "development") {
+        // eslint-disable-next-line no-console
         console.log(err)
     }
 

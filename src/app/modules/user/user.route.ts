@@ -18,7 +18,7 @@ router.get("/all-users",
 
 router.get("/me", checkAuth(...Object.values(Role)), UserController.getMe)
 
-router.get("/single-user", UserController.getSingleUsers)
+router.get("/:id", checkAuth(Role.ADMIN, Role.SUPER_ADMIN), UserController.getSingleUsers)
 
 router.patch('/:id',
     validateRequest(UpdateUserZodSchema),

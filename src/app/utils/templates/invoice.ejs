@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice</title>
+</head>
+<body style="font-family: Arial, sans-serif; padding: 20px;">
+
+  <h1>Invoice for Booking: <%= tourTitle %></h1>
+
+  <p><strong>Customer:</strong> <%= userName %></p>
+  <p><strong>Booking Date:</strong> <%= bookingDate.toDateString() %></p>
+  <p><strong>Guest Count:</strong> <%= guestCount %></p>
+  <p><strong>Payment ID:</strong> <%= transactionId %></p>
+  <p><strong>Amount Paid:</strong> $<%= totalAmount.toFixed(2) %></p>
+
+  <p>Thank you for your booking!</p>
+
+  <!-- Optional PDF download link -->
+  <p>
+    <a href="#" style="color: blue; text-decoration: underline;">Download Invoice PDF</a>
+  </p>
+
+</body>
+</html>
