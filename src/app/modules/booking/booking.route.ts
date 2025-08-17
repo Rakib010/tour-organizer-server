@@ -3,7 +3,7 @@ import { Router } from "express";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { Role } from "../user/user.interface";
-import { createBookingZodSchema, updateBookingStatusZodSchema } from "./booking.validation";
+import { createBookingZodSchema } from "./booking.validation";
 import { BookingController } from "./booking.controller";
 
 
@@ -16,7 +16,7 @@ router.post("/",
     BookingController.createBooking
 );
 
- // api/v1/booking
+// api/v1/booking
 router.get("/",
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     BookingController.getAllBookings
@@ -28,7 +28,21 @@ router.get("/my-bookings",
     BookingController.getUserBookings
 );
 
-// api/v1/booking/bookingId
+export const BookingRoutes = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* // api/v1/booking/bookingId
 router.get("/:bookingId",
     checkAuth(...Object.values(Role)),
     BookingController.getSingleBooking
@@ -39,6 +53,4 @@ router.patch("/:bookingId/status",
     checkAuth(...Object.values(Role)),
     validateRequest(updateBookingStatusZodSchema),
     BookingController.updateBookingStatus
-); 
-
-export const BookingRoutes = router;
+);  */

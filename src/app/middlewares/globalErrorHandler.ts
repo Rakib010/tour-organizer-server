@@ -15,7 +15,6 @@ export const globalErrorhandler = async (err: any, req: Request, res: Response, 
         console.log(err)
     }
 
-
     let errorSources: TErrorSources[] = []
     let statuscode = 500
     let message = `Something Went Wrong!!`

@@ -8,23 +8,17 @@ import passport from "passport"
 import expressSession from "express-session"
 import "./app/config/passport"
 import { envVars } from "./app/config/env"
-import { rateLimit } from 'express-rate-limit'
-
+/* import { rateLimit } from 'express-rate-limit' */
 
 const app = express()
 
 
-const limiter = rateLimit({
+/* const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
 	limit: 1, 
 })
 // Apply the rate limiting middleware to all requests.
-app.use(limiter)
-
-
-
-
-
+app.use(limiter) */
 
 
 app.use(expressSession({
@@ -49,7 +43,7 @@ app.use("/api/v1", router)
 // Root route 
 app.get("/", (req: Request, res: Response) => {
     res.status(200).json({
-        message: "Welcome to Tour Management System Backend"
+        message: "Welcome to Tour Backend"
     })
 })
 
