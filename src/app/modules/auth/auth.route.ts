@@ -6,7 +6,7 @@ import passport from "passport";
 import { envVars } from "../../config/env";
 
 
-const route = Router()
+const route = Router() 
 
 route.post('/login', AuthController.credentialsLogin)
 route.post('/refresh-token', AuthController.getRefreshAccessToken)

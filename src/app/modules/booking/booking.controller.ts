@@ -28,17 +28,6 @@ const getUserBookings = catchAsync(
         });
     }
 );
-const getSingleBooking = catchAsync(
-    async (req: Request, res: Response) => {
-        const booking = await BookingService.getBookingById();
-        sendResponse(res, {
-            statusCode: 200,
-            success: true,
-            message: "Booking retrieved successfully",
-            data: booking,
-        });
-    }
-);
 
 const getAllBookings = catchAsync(
     async (req: Request, res: Response) => {
@@ -54,26 +43,13 @@ const getAllBookings = catchAsync(
     }
 );
 
-const updateBookingStatus = catchAsync(
-    async (req: Request, res: Response) => {
 
-        const updated = await BookingService.updateBookingStatus(
-        );
-        sendResponse(res, {
-            statusCode: 200,
-            success: true,
-            message: "Booking Status Updated Successfully",
-            data: updated,
-        });
-    }
-);
 
 
 
 export const BookingController = {
     createBooking,
     getAllBookings,
-    getSingleBooking,
     getUserBookings,
-    updateBookingStatus,
+
 }

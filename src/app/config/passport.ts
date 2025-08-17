@@ -78,6 +78,7 @@ passport.use(
 
                 let isUserExist = await User.findOne({ email })
 
+
                 if (isUserExist && !isUserExist.isVerified) {
                     return done(null, false, { message: "User is not verified" })
                 }

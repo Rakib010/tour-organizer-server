@@ -12,7 +12,6 @@ import { JwtPayload } from 'jsonwebtoken';
 // route matching -> controller -> service -> model -> db
 
 const createUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-
     const result = await userServices.createUser(req.body)
 
     sendResponse(res, {

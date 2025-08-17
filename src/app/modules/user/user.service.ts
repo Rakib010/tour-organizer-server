@@ -9,6 +9,7 @@ import { QueryBuilder } from '../../utils/QueryBuilder';
 
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, ...rest } = payload;
+   
 
     const isUserExits = await User.findOne({ email })
 

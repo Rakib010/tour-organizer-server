@@ -10,7 +10,7 @@ const router = Router()
 
 
 router.post("/register",
-    validateRequest(createUserZodSchema),
+    /* validateRequest(createUserZodSchema) */
     UserController.createUser)
 
 router.get("/all-users",
