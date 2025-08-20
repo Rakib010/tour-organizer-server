@@ -174,7 +174,6 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     return updatedTour;
 };
 
-
 const deleteTour = async (id: string) => {
 
     // Optional: Check if tour has bookings

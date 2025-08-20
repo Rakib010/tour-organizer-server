@@ -19,9 +19,9 @@ const userSchema = new Schema<IUser>({
         enum: Object.values(Role),
         default: Role.USER
     },
-    phone: { type: String },
+    phone: { type: String, required: true },
     picture: { type: String },
-    address: { type: String },
+    address: { type: String, required: true },
     isDeleted: { type: String, default: false },
     isActive: {
         type: String,

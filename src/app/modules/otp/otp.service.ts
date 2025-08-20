@@ -4,7 +4,7 @@ import { sendEmail } from "../../utils/sendEmail"
 import AppError from "../../errorHelpers/AppError"
 import { User } from "../user/user.model"
 
-const OTP_EXPIRATION = 2 * 60  //2 minute
+const OTP_EXPIRATION = 2 * 60
 
 const generateOtp = (length = 6) => {
     // 6 digit otp 
@@ -47,8 +47,8 @@ const sendOTP = async (email: string, name: string) => {
 };
 
 const verifyOTP = async (email: string, otp: string) => {
-    //const user = await User.findOne({ email, isVerified: false })
     const user = await User.findOne({ email })
+    
 
     if (!user) {
         throw new AppError(401, "User not found")

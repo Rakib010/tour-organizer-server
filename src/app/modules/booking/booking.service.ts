@@ -103,16 +103,22 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     }
 };
 
-const getUserBookings = async () => {
-
-    return {}
-};
-
-
 const getAllBookings = async () => {
-    return {}
+    const booking = await Booking.find()
+        .populate("tour", "title ")
+        .populate("payment", "transactionId status");
+    return booking
 }
 
+const getUserBookings = async (userId: string) => {
+    const bookings = await Booking.find({ user: userId })
+        .populate("tour", "title costFrom")
+        .populate("payment", "invoiceUrl");
+    if (!bookings || bookings.length === 0) {
+        throw new AppError(404, "No bookings found for this user");
+    }
+    return bookings;
+};
 
 
 

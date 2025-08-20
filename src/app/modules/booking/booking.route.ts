@@ -9,21 +9,18 @@ import { BookingController } from "./booking.controller";
 
 const router = Router();
 
-// api/v1/booking
 router.post("/",
     checkAuth(...Object.values(Role)),
     validateRequest(createBookingZodSchema),
     BookingController.createBooking
 );
-
-// api/v1/booking
+// Get all bookings (ADMIN only)
 router.get("/",
     checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
     BookingController.getAllBookings
 );
-
-// api/v1/booking/my-bookings
-router.get("/my-bookings",
+// Get bookings for a user (USER/Admin)
+router.get("/my-booking",
     checkAuth(...Object.values(Role)),
     BookingController.getUserBookings
 );
