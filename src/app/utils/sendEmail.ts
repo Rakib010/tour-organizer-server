@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import ejs from "ejs";    // For rendering email HTML templates
+import ejs from "ejs";   
 import nodemailer from "nodemailer";
-import path from "path";  // Helps locate the template file
+import path from "path";  
 import { envVars } from "../config/env";
 import AppError from "../errorHelpers/AppError";
 

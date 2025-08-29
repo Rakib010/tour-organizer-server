@@ -1,6 +1,5 @@
 import { deleteImageFromCloudinary } from '../../config/cloudinary.config';
 import { QueryBuilder } from './../../utils/QueryBuilder';
-import { tourSearchableFields } from './tour.constant';
 import { ITour } from "./tour.interface"
 import { Tour } from "./tour.model"
 
@@ -84,6 +83,8 @@ const getAllTours = async (query: Record<string, string>) => {
 
     const queryBuilder = new QueryBuilder(Tour.find(), query);
 
+    const tourSearchableFields = ["title", "description", "location"]
+    
     const tours = await queryBuilder
         .search(tourSearchableFields)
         .filter()
@@ -121,11 +122,6 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
         throw new Error("Tour not found.");
     }
 
-    /**
-     * Slug generation logic was previously handled here if the title was updated.
-     * But now it's managed in the model-level pre-save hook, so it has been removed from here.
-     */
-
     // If new images are provided, and existing images already exist in DB
     if (payload.images && payload.images.length > 0 && existingTour.images && existingTour.images.length > 0) {
         // Combine the new images with the existing ones and assign to payload.images
@@ -155,8 +151,8 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
 
     // Update the tour data
     const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
-        new: true, 
-        runValidators: true, 
+        new: true,
+        runValidators: true,
     });
 
     // If deleteImages exist, also remove them from Cloudinary
@@ -175,12 +171,6 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
 };
 
 const deleteTour = async (id: string) => {
-
-    // Optional: Check if tour has bookings
-    /* const hasBooking = await Booking.exists({ tour: id });
-    if (hasBooking) {
-        throw new AppError(httpStatus.BAD_REQUEST, 'Tour has active bookings');
-    } */
     const tour = await Tour.findByIdAndDelete(id);
     return tour;
 };

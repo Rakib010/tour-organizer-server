@@ -7,15 +7,15 @@ import cookieParser from "cookie-parser"
 import passport from "passport"
 import expressSession from "express-session"
 import "./app/config/passport"
-import { envVars } from "./app/config/env"
+//import { envVars } from "./app/config/env"
 /* import { rateLimit } from 'express-rate-limit' */
 
 const app = express()
 
 
 /* const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	limit: 1, 
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 1, 
 })
 // Apply the rate limiting middleware to all requests.
 app.use(limiter) */
@@ -33,7 +33,7 @@ app.use(express.json())
 app.set("trust proxy", 1)
 app.use(express.urlencoded({ extended: true }))
 app.use(cors({
-    origin: envVars.FRONTEND_URL,
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true
 }))
 
