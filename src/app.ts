@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser"
 import passport from "passport"
 import expressSession from "express-session"
 import "./app/config/passport"
-import { envVars } from "./app/config/env"
+// import { envVars } from "./app/config/env"
 /* import { rateLimit } from 'express-rate-limit' */
 
 const app = express()
@@ -32,8 +32,21 @@ app.use(cookieParser())
 app.use(express.json())
 app.set("trust proxy", 1)
 app.use(express.urlencoded({ extended: true }))
+/*
+ * tour-server previous CORS config (kept for reference, not removed)
+ *
+ * app.use(cors({
+ *     origin: envVars.FRONTEND_URL,
+ *     credentials: true
+ * }))
+ */
 app.use(cors({
-    origin: envVars.FRONTEND_URL,
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://tour-organizer-tawny.vercel.app",
+        "http://tour-organizer-tawny.vercel.app"
+    ],
     credentials: true
 }))
 

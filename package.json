@@ -7,6 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts",
     "build": "tsc",
     "lint": "npx eslint ./src",
+    "seed:tours": "ts-node ./src/app/utils/seedTours.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -56,6 +57,7 @@
     "passport-local": "^1.0.0",
     "pdfkit": "^0.17.1",
     "redis": "^5.6.1",
+    "sslcommerz-lts": "^1.2.0",
     "zod": "^3.25.76"
   }
 }

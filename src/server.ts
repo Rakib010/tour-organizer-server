@@ -25,8 +25,22 @@ const startServer = async () => {
     }
 
 }
+/*
+ * tour-server previous startup flow (kept for reference, not removed)
+ *
+ * (async () => {
+ *     await connectRedis()
+ *     await startServer()
+ *     await seedSuperAdmin()
+ * })()
+ */
+
 (async () => {
-    await connectRedis()
+    try {
+        await connectRedis()
+    } catch (e) {
+        console.warn("Redis init error (continuing without Redis):", e)
+    }
     await startServer()
     await seedSuperAdmin()
 })()

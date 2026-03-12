@@ -1,5 +1,5 @@
 import crypto from "crypto"
-import { redisClient } from "../../config/redis.config"
+import { getCache, setCache, deleteCache } from "../../config/redis.config"
 import { sendEmail } from "../../utils/sendEmail"
 import AppError from "../../errorHelpers/AppError"
 import { User } from "../user/user.model"
@@ -28,12 +28,7 @@ const sendOTP = async (email: string, name: string) => {
 
     const redisKey = `otp:${email}`
 
-    await redisClient.set(redisKey, otp, {
-        expiration: {
-            type: "EX",
-            value: OTP_EXPIRATION
-        }
-    })
+    await setCache(redisKey, otp, OTP_EXPIRATION)
 
     await sendEmail({
         to: email,
@@ -59,7 +54,7 @@ const verifyOTP = async (email: string, otp: string) => {
 
     const redisKey = `otp:${email}`
 
-    const savedOtp = await redisClient.get(redisKey)
+    const savedOtp = await getCache(redisKey)
 
     if (!savedOtp) {
         throw new AppError(401, "Invalid OTP")
@@ -71,7 +66,7 @@ const verifyOTP = async (email: string, otp: string) => {
 
     await Promise.all([
         User.updateOne({ email }, { isVerified: true }, { runValidators: true }),
-        redisClient.del([redisKey])
+        deleteCache(redisKey)
     ])
 
 
