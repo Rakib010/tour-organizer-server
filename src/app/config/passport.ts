@@ -21,19 +21,20 @@ passport.use(
                    }
                       */
                 if (!isUserExits) {
-                    return done("User does not exist")
+                    return done(null, false, { message: "User does not exist", statusCode: 401 })
                 }
 
-                if (!isUserExits.isVerified) {
-                    return done("user is  not verified")
-                }
+                // Email verification (disabled for now)
+                // if (!isUserExits.isVerified) {
+                //     return done(null, false, { message: "User is not verified", statusCode: 403 })
+                // }
 
                 if (isUserExits.isActive === IsActive.BLOCKED || isUserExits.isActive === IsActive.INACTIVE) {
-                    return done(`user is ${isUserExits.isActive}`)
+                    return done(null, false, { message: `User is ${isUserExits.isActive}`, statusCode: 403 })
                 }
 
                 if (!isUserExits.isDeleted) {
-                    return done("user is deleted")
+                    return done(null, false, { message: "User is deleted", statusCode: 403 })
                 }
 
                 const isGoogleAuthenticated = isUserExits.auths.some(providerObjects => providerObjects.provider === "google")
@@ -48,7 +49,7 @@ passport.use(
 
                 const isPasswordMatch = await bcryptjs.compare(password as string, isUserExits.password as string)
                 if (!isPasswordMatch) {
-                    return done(null, false, { message: "password does not match" })
+                    return done(null, false, { message: "Password does not match", statusCode: 401 })
                 }
 
                 return done(null, isUserExits)
@@ -79,9 +80,10 @@ passport.use(
                 let isUserExist = await User.findOne({ email })
 
 
-                if (isUserExist && !isUserExist.isVerified) {
-                    return done(null, false, { message: "User is not verified" })
-                }
+                // Email verification (disabled for now)
+                // if (isUserExist && !isUserExist.isVerified) {
+                //     return done(null, false, { message: "User is not verified" })
+                // }
 
                 if (isUserExist && (isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE)) {
                     done(`User is ${isUserExist.isActive}`)

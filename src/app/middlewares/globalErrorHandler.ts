@@ -65,10 +65,9 @@ export const globalErrorhandler = async (err: any, req: Request, res: Response, 
         message = err.message
     }
 
+    // Never leak internal error details (stack/err) to the client.
     res.status(statuscode).json({
         success: false,
         message,
-        err: envVars.NODE_ENV === "development" ? err : null,
-        stack: envVars.NODE_ENV === "development" ? err.stack : null
     })
 }

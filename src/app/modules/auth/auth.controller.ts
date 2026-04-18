@@ -36,11 +36,22 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
     passport.authenticate("local", async (err: any, user: any, info: any) => {
 
         if (err) {
+            // Passport local strategy sometimes returns non-Error values.
+            // Normalize them into an AppError so we don't accidentally respond 500.
+            if (typeof err === "string") {
+                return next(new AppError(httpStatus.UNAUTHORIZED, err))
+            }
             return next(err)
         }
 
         if (!user) {
-            return next(new AppError(401, info.message))
+            const statusCode =
+                typeof info?.statusCode === "number" ? info.statusCode : httpStatus.UNAUTHORIZED
+            const message =
+                typeof info?.message === "string" && info.message.length
+                    ? info.message
+                    : "Unauthorized"
+            return next(new AppError(statusCode, message))
         }
 
         const userTokens = await createUserToken(user)

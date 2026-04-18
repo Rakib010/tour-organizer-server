@@ -88,10 +88,17 @@ const loadEnvVariables = (): EnvConfig => {
         }
     })
 
-    return {
+    // Be tolerant to common `.env` typos like `DB_URL=DB_URL=mongodb...`
+    // so local development doesn't break completely.
+    const rawDbUrl = (process.env.DB_URL as string).trim()
+    const sanitizedDbUrl = rawDbUrl.startsWith("DB_URL=")
+        ? rawDbUrl.slice("DB_URL=".length)
+        : rawDbUrl
+
+return {
         PORT: process.env.PORT as string,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        DB_URL: process.env.DB_URL!,
+        DB_URL: sanitizedDbUrl,
         NODE_ENV: process.env.NODE_ENV as "development" | "production",
         BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND as string,
         JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,

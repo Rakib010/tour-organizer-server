@@ -26,9 +26,10 @@ export const checkAuth = (...authRoles: string[]) =>
             if (!isUserExits) {
                 throw new AppError(httpStatus.BAD_REQUEST, "user does not exist")
             }
-            if (!isUserExits.isVerified) {
-                throw new AppError(httpStatus.BAD_REQUEST, "user is  not verified")
-            }
+            // Email verification (disabled for now)
+            // if (!isUserExits.isVerified) {
+            //     throw new AppError(httpStatus.BAD_REQUEST, "user is  not verified")
+            // }
             if (isUserExits.isActive === IsActive.BLOCKED || isUserExits.isActive === IsActive.INACTIVE) {
                 throw new AppError(httpStatus.BAD_REQUEST,
                     `user is ${isUserExits.isActive}`)
