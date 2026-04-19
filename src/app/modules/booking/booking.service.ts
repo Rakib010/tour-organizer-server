@@ -103,14 +103,24 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     }
 };
 
-const getUserBookings = async () => {
+const getUserBookings = async (userId: string) => {
+    const bookings = await Booking.find({ user: userId })
+        .populate("tour", "title costFrom")
+        .populate("payment")
+        .sort({ createdAt: -1 });
 
-    return {}
+    return bookings;
 };
 
 
 const getAllBookings = async () => {
-    return {}
+    const bookings = await Booking.find()
+        .populate("user", "name email phone address")
+        .populate("tour", "title costFrom")
+        .populate("payment")
+        .sort({ createdAt: -1 });
+
+    return bookings;
 }
 
 

@@ -19,16 +19,29 @@ export const globalErrorhandler = async (err: any, req: Request, res: Response, 
     let statuscode = 500
     let message = `Something Went Wrong!!`
 
-    // single file 
+    // single file (cleanup best-effort; never block error response)
     if (req.file) {
-        await deleteImageFromCloudinary(req.file.path)
+        try {
+            await deleteImageFromCloudinary(req.file.path)
+        } catch (e) {
+            if (envVars.NODE_ENV === "development") {
+                // eslint-disable-next-line no-console
+                console.warn("Cloudinary cleanup failed (single file):", e)
+            }
+        }
     }
 
-    // multiple files
+    // multiple files (cleanup best-effort; never block error response)
     if (req.files && Array.isArray(req.files) && req.files.length) {
         const imageUrls = (req.files as Express.Multer.File[]).map(file => file.path)
-
-        await Promise.all(imageUrls.map(url => deleteImageFromCloudinary(url)))
+        try {
+            await Promise.all(imageUrls.map(url => deleteImageFromCloudinary(url)))
+        } catch (e) {
+            if (envVars.NODE_ENV === "development") {
+                // eslint-disable-next-line no-console
+                console.warn("Cloudinary cleanup failed (multi file):", e)
+            }
+        }
     }
 
     //Duplicate error

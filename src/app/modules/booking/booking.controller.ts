@@ -19,7 +19,8 @@ const createBooking = catchAsync(async (req: Request, res: Response) => {
 
 const getUserBookings = catchAsync(
     async (req: Request, res: Response) => {
-        const bookings = await BookingService.getUserBookings();
+        const decodeToken = req.user as JwtPayload
+        const bookings = await BookingService.getUserBookings(decodeToken.userId);
         sendResponse(res, {
             statusCode: 200,
             success: true,
@@ -31,13 +32,12 @@ const getUserBookings = catchAsync(
 
 const getAllBookings = catchAsync(
     async (req: Request, res: Response) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const bookings = await BookingService.getAllBookings();
         sendResponse(res, {
             statusCode: 200,
             success: true,
             message: "Bookings retrieved successfully",
-            data: {},
+            data: bookings,
             // meta: {},
         });
     }
