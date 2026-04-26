@@ -52,7 +52,11 @@ const successPayment = async (query: Record<string, string>) => {
     // Update Payment Status to PAID
 
     const session = await Booking.startSession();
-    session.startTransaction()
+    session.startTransaction();
+
+    let invoiceData: IInvoiceData;
+    let pdfBuffer: Buffer;
+    let recipientEmail: string;
 
     try {
         const updatedPayment = await Payment.findOneAndUpdate(
@@ -78,7 +82,7 @@ const successPayment = async (query: Record<string, string>) => {
         }
 
         //  Invoice generation
-        const invoiceData: IInvoiceData = {
+        invoiceData = {
             bookingDate: updatedBooking.createdAt as Date,
             guestCount: updatedBooking.guestCount,
             totalAmount: updatedPayment.amount,
@@ -87,7 +91,7 @@ const successPayment = async (query: Record<string, string>) => {
             userName: (updatedBooking.user as unknown as IUser).name
         }
 
-        const pdfBuffer = await generatePdf(invoiceData)
+        pdfBuffer = await generatePdf(invoiceData)
 
         // upload pdf in cloudinary
         const cloudinaryResult = await uploadBufferToCloudinary(pdfBuffer, "invoice")
@@ -100,33 +104,37 @@ const successPayment = async (query: Record<string, string>) => {
         // invoice pdf cloudinary upload dewer por payment(db te) e invoiceURL er link ta update korlam
         await Payment.findByIdAndUpdate(updatedPayment._id, { invoiceUrl: cloudinaryResult.secure_url }, { runValidators: true, session })
 
-        //console.log({ cloudinaryResult })
+        recipientEmail = (updatedBooking.user as unknown as IUser).email;
 
-        // Email sending with attachment
+        await session.commitTransaction();
+    } catch (error) {
+        await session.abortTransaction();
+        throw error
+    } finally {
+        session.endSession()
+    }
+
+    // SMTP must never roll back a completed gateway payment
+    try {
         await sendEmail({
-            to: (updatedBooking.user as unknown as IUser).email,
+            to: recipientEmail!,
             subject: "Your Booking Invoice",
             templateName: "invoice",
-            templateData: invoiceData,
+            templateData: invoiceData!,
             attachments: [
                 {
                     filename: "invoice.pdf",
-                    content: pdfBuffer,
+                    content: pdfBuffer!,
                     contentType: "application/pdf"
                 }
             ]
         })
-
-
-
-        await session.commitTransaction(); //transaction
-        session.endSession()
-        return { success: true, message: "Payment Completed Successfully" }
-    } catch (error) {
-        await session.abortTransaction(); // rollback
-        session.endSession()
-        throw error
+    } catch (emailErr) {
+        // eslint-disable-next-line no-console
+        console.error("Invoice email failed after payment was committed:", emailErr);
     }
+
+    return { success: true, message: "Payment Completed Successfully" }
 };
 
 const failPayment = async (query: Record<string, string>) => {
