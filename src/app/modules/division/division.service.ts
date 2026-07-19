@@ -4,22 +4,23 @@ import { IDivision } from "./division.interface";
 import { Division } from "./division.model";
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import { deleteImageFromCloudinary } from '../../config/cloudinary.config';
+import { cleanDisplayName, exactNameFilter } from '../../utils/exactNameFilter';
 
 
 const createDivision = async (payload: Partial<IDivision>) => {
-    const existingDivision = await Division.findOne({ name: payload.name });
-    if (existingDivision) {
-        throw new Error("A division with this name already exists.");
+    if (!payload.name?.trim()) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Division name is required");
     }
 
-    // ey kaj hook die kora hoise division model e
-    /*  const baseSlug = payload.name?.toLowerCase().split(" ").join("-")
-     let slug = `${baseSlug}-division`
- 
-     let counter = 0;
-     while (await Division.exists({ slug })) {
-         slug = `${slug}-${counter++}`
-     } payload.slug = slug */
+    payload.name = cleanDisplayName(payload.name);
+
+    const existingDivision = await Division.findOne(exactNameFilter("name", payload.name));
+    if (existingDivision) {
+        throw new AppError(
+            httpStatus.CONFLICT,
+            "A division with this name already exists. Please use a different name."
+        );
+    }
 
     const division = await Division.create(payload)
     return division
@@ -60,25 +61,22 @@ const updatedDivision = async (id: string, payload: Partial<IDivision>) => {
     if (!existingDivision) {
         throw new AppError(httpStatus.NOT_FOUND, "Division Not Found")
     }
-    const duplicateDivision = await Division.findOne({
-        name: payload.name,
-        _id: { $ne: id },
-    });
 
-    if (duplicateDivision) {
-        throw new Error("A division with this name already exists.");
-    }
+    if (payload.name) {
+        payload.name = cleanDisplayName(payload.name);
 
-    /* if (payload.name) {
-        const baseSlug = payload.name?.toLowerCase().split(" ").join("-")
-        let slug = `${baseSlug}-division`
+        const duplicateDivision = await Division.findOne({
+            ...exactNameFilter("name", payload.name),
+            _id: { $ne: id },
+        });
 
-        let counter = 0;
-        while (await Division.exists({ slug })) {
-            slug = `${slug}-${counter++}`
+        if (duplicateDivision) {
+            throw new AppError(
+                httpStatus.CONFLICT,
+                "A division with this name already exists. Please use a different name."
+            );
         }
-        payload.name = slug
-    } */
+    }
 
     const updatedDivision = await Division.findByIdAndUpdate(id, payload, { new: true, runValidators: true })
 

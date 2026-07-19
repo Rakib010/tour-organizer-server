@@ -3,13 +3,23 @@ import AppError from "../../errorHelpers/AppError";
 import { ITourType } from "./tourType.interface";
 import { TourType } from "./tourType.modal";
 import { QueryBuilder } from '../../utils/QueryBuilder';
+import { cleanDisplayName, exactNameFilter } from '../../utils/exactNameFilter';
 
 
 
 const createTourType = async (payload: ITourType) => {
-  const isExists = await TourType.findOne({ name: payload.name });
+  if (!payload.name?.trim()) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Category name is required");
+  }
+
+  payload.name = cleanDisplayName(payload.name);
+
+  const isExists = await TourType.findOne(exactNameFilter("name", payload.name));
   if (isExists) {
-    throw new AppError(httpStatus.CONFLICT, "Tour type already exists");
+    throw new AppError(
+      httpStatus.CONFLICT,
+      "A category with this name already exists. Please use a different name."
+    );
   }
   const result = await TourType.create(payload);
   return result;
@@ -53,7 +63,23 @@ const getSingleTourTypes = async (id: string) => {
 const updateTourType = async (id: string, payload: Partial<ITourType>) => {
   const existingTourType = await TourType.findById(id);
   if (!existingTourType) {
-    throw new Error("Tour type not found.");
+    throw new AppError(httpStatus.NOT_FOUND, "Tour type not found.");
+  }
+
+  if (payload.name) {
+    payload.name = cleanDisplayName(payload.name);
+
+    const duplicateTourType = await TourType.findOne({
+      ...exactNameFilter("name", payload.name),
+      _id: { $ne: id },
+    });
+
+    if (duplicateTourType) {
+      throw new AppError(
+        httpStatus.CONFLICT,
+        "A category with this name already exists. Please use a different name."
+      );
+    }
   }
 
   const updated = await TourType.findByIdAndUpdate(id, payload, {

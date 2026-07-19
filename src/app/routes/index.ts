@@ -8,6 +8,7 @@ import { BookingRoutes } from "../modules/booking/booking.route"
 import { paymentRoutes } from "../modules/payment/payment.route"
 import { OtpRoutes } from "../modules/otp/otp.route"
 import { StatsRoutes } from "../modules/stats/stats.route"
+import { CommentRoutes } from "../modules/comment/comment.route"
 
 
 
@@ -49,6 +50,10 @@ const modulesRoute = [
     {
         path: '/stats',
         route: StatsRoutes
+    },
+    {
+        path: '/comment',
+        route: CommentRoutes
     },
 
 ]

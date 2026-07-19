@@ -3,7 +3,7 @@ import { Schema, model } from "mongoose";
 
 
 const divisionSchema = new Schema<IDivision>({
-    name: { type: String, required: true, unique: true },
+    name: { type: String, required: true, unique: true, trim: true },
     slug: { type: String, unique: true },
     thumbnail: { type: String },
     description: { type: String },
@@ -40,7 +40,7 @@ divisionSchema.pre("findOneAndUpdate", async function (next) {
         while (await Division.exists({ slug })) {
             slug = `${slug}-${counter++}`
         }
-        division.name = slug
+        division.slug = slug
     }
     this.setUpdate(division)
 

@@ -1,10 +1,13 @@
 import { model, Schema, } from "mongoose";
+import httpStatus from "http-status-codes";
+import AppError from "../../errorHelpers/AppError";
+import { cleanDisplayName, exactNameFilter } from "../../utils/exactNameFilter";
 import { ITour } from "./tour.interface";
 
 
 
 const tourSchema = new Schema<ITour>({
-    title: { type: String, required: true },
+    title: { type: String, required: true, unique: true, trim: true },
     slug: { type: String, unique: true },
     description: { type: String },
     images: { type: [String], default: [] },
@@ -35,41 +38,87 @@ const tourSchema = new Schema<ITour>({
 })
 
 
-// hook for create division
+// Block duplicate titles (global) and generate slug from title
 tourSchema.pre("save", async function (next) {
-    if (this.isModified("title")) {
-        const baseSlug = this.title.toLowerCase().split(" ").join("-")
-        let slug = `${baseSlug}`
+    try {
+        if (this.isModified("title") && this.title) {
+            this.title = cleanDisplayName(this.title);
 
-        let counter = 0;
-        while (await Tour.exists({ slug })) {
-            slug = `${slug}-${counter++}`
+            const duplicate = await Tour.findOne({
+                ...exactNameFilter("title", this.title),
+                _id: { $ne: this._id },
+            }).select("_id");
+
+            if (duplicate) {
+                return next(
+                    new AppError(
+                        httpStatus.CONFLICT,
+                        "A tour with this name already exists. Please use a different name."
+                    )
+                );
+            }
+
+            const baseSlug = this.title.toLowerCase().split(" ").join("-");
+            let slug = baseSlug;
+            let counter = 0;
+
+            // Only bump slug if another doc already owns this slug (should be rare when titles are unique)
+            while (await Tour.exists({ slug, _id: { $ne: this._id } })) {
+                slug = `${baseSlug}-${++counter}`;
+            }
+            this.slug = slug;
         }
-        this.slug = slug
+        next();
+    } catch (error) {
+        next(error as Error);
     }
-    next()
 })
 
-// hook for updated division
 tourSchema.pre("findOneAndUpdate", async function (next) {
-    const tour = this.getUpdate() as Partial<ITour>
+    try {
+        const tour = this.getUpdate() as Partial<ITour> & { $set?: Partial<ITour> };
+        const updatePayload = (tour.$set ? tour.$set : tour) as Partial<ITour>;
+        const title = updatePayload.title;
 
-    if (tour.title) {
-        const baseSlug = tour.title.toLowerCase().split(" ").join("-")
-        let slug = `${baseSlug}`
+        if (title) {
+            const cleanedTitle = cleanDisplayName(title);
+            updatePayload.title = cleanedTitle;
 
+            const query = this.getQuery() as { _id?: unknown };
+            const duplicate = await Tour.findOne({
+                ...exactNameFilter("title", cleanedTitle),
+                _id: { $ne: query._id },
+            }).select("_id");
 
-        let counter = 0;
-        while (await Tour.exists({ slug })) {
-            slug = `${slug}-${counter++}` // dhaka-division-2
+            if (duplicate) {
+                return next(
+                    new AppError(
+                        httpStatus.CONFLICT,
+                        "A tour with this name already exists. Please use a different name."
+                    )
+                );
+            }
+
+            const baseSlug = cleanedTitle.toLowerCase().split(" ").join("-");
+            let slug = baseSlug;
+            let counter = 0;
+
+            while (await Tour.exists({ slug, _id: { $ne: query._id } })) {
+                slug = `${baseSlug}-${++counter}`;
+            }
+            updatePayload.slug = slug;
+
+            if (tour.$set) {
+                this.setUpdate({ ...tour, $set: updatePayload });
+            } else {
+                this.setUpdate(updatePayload);
+            }
         }
 
-        tour.slug = slug
+        next();
+    } catch (error) {
+        next(error as Error);
     }
-
-    this.setUpdate(tour)
-
-    next()
 })
 
 

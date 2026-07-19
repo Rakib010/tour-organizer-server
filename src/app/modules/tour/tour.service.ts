@@ -1,24 +1,39 @@
+import httpStatus from 'http-status-codes';
+import AppError from "../../errorHelpers/AppError";
 import { deleteImageFromCloudinary } from '../../config/cloudinary.config';
 import { QueryBuilder } from './../../utils/QueryBuilder';
+import { cleanDisplayName, exactNameFilter } from '../../utils/exactNameFilter';
 import { tourSearchableFields } from './tour.constant';
 import { ITour } from "./tour.interface"
 import { Tour } from "./tour.model"
 
 
-const createTour = async (payload: Partial<ITour>) => {
-    const existingTour = await Tour.findOne({ title: payload.title });
-    if (existingTour) {
-        throw new Error("A tour with this title already exists.");
+const assertUniqueTourTitle = async (title: string, excludeId?: string) => {
+    const filter: Record<string, unknown> = {
+        ...exactNameFilter("title", title),
+    };
+
+    if (excludeId) {
+        filter._id = { $ne: excludeId };
     }
 
-    /* const baseSlug = payload.title?.toLowerCase().split(" ").join("-")
-    let slug = `${baseSlug}`
+    const existingTour = await Tour.findOne(filter).select("_id title");
+    if (existingTour) {
+        throw new AppError(
+            httpStatus.CONFLICT,
+            "A tour with this name already exists. Please use a different name."
+        );
+    }
+};
 
-    let counter = 0;
-    while (await Tour.exists({ slug })) {
-        slug = `${slug}-${counter++}`
-    }payload.slug = slug */
+const createTour = async (payload: Partial<ITour>) => {
+    if (!payload.title?.trim()) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Tour title is required");
+    }
 
+    // Global unique name — division / category change does NOT allow duplicate titles
+    payload.title = cleanDisplayName(payload.title);
+    await assertUniqueTourTitle(payload.title);
 
     const tour = await Tour.create(payload);
     return tour;
@@ -118,7 +133,12 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     const existingTour = await Tour.findById(id);
 
     if (!existingTour) {
-        throw new Error("Tour not found.");
+        throw new AppError(httpStatus.NOT_FOUND, "Tour not found.");
+    }
+
+    if (payload.title) {
+        payload.title = cleanDisplayName(payload.title);
+        await assertUniqueTourTitle(payload.title, id);
     }
 
     /**
